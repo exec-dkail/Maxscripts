@@ -176,11 +176,39 @@ function unhideFacesVerts=
   )
   redrawViews()
 )
+--SELECTION SET FUNCTION START
+fn getObjProperties obj =
+(
+  return (getUserProp obj "setName")
+)
+fn getSelectionSetName obj =
+(
+  local selSetName
+  for i = 1 to selectionSets.count do
+  (
+    for j = 1 to selectionSets[i].count do
+    (
+      if (matchPattern (selectionSets[i][j].name) pattern:obj.name) == true do
+      (
+        selSetName = (selectionSets[i].name)
+      )
+    )
+  )
+  return selSetName
+)
+fn addToSelectionSet obj setName = 
+(
+  try(oldObj = for i in selectionSets[setName] collect i)catch(oldObj = #())
+  select obj
+  newObj = selection as array
+  selectionSets[setName] = (oldObj + newObj)
+)			
+--SELECTION SET FUNCTION END
 function forceResetXForm =
 (
   if selection.count > 0 then
   (
-    for i in selection do
+    for i in selection where superClassOf i == GeometryClass do
     (
       theBox = Box width:10 height:10 length:10
       theLayer = LayerManager.getLayerFromName i.layer.name
@@ -188,21 +216,29 @@ function forceResetXForm =
       (
         theLayer.addNode theBox
       )
+      if (getSelectionSetName i) != undefined do setUserProp theBox "setName" (getSelectionSetName i)
+      theBox.parent = i.parent
       theBox.pivot = theBox.center
       theBox.pos = i.pos
       theBox.pivot = i.pivot
-      theBox.name = i.name+"_reset"
+      theBox.name = i.name+"_resetBox"
       theBox.material = i.material
       theBox.wirecolor = i.wirecolor
       ConvertTo theBox Editable_Poly
       polyop.setFaceSelection i #none
       polyop.setFaceSelection theBox #all
     )
-    for i in $*_reset do
+    for i in $*_resetBox do
     (
       polyop.deleteFaces i (polyop.getFaceSelection i)
-      i.attach (getNodeByName((substituteString i.name "_reset" ""))) i
-      i.name = (substituteString i.name "_reset" "")
+      i.attach (getNodeByName((substituteString i.name "_resetBox" ""))) i
+      i.name = (substituteString i.name "_resetBox" "")
+      if (getObjProperties i) != undefined do
+      (
+        addToSelectionSet i (getObjProperties i)
+        setUserPropBuffer i ""
+      )
     )
+    max select none
   )
 )
