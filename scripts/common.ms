@@ -154,20 +154,27 @@ fn checkZeroFaceArea obj =
 
   )catch()
 )
-function unhideAllFaces =
+function unhideFacesVerts=
 (
   for i in objects where superclassof i == GeometryClass do
   (
     try
-    (				
+    (
       getHiddenFaces = polyop.getHiddenFaces i as array
       if getHiddenFaces[1] != undefined do
       (
         polyop.unHideAllFaces i
         format "Object with Hidden Faces : %\n" i.name
       )
+      getHiddenVerts = polyop.getHiddenVerts i as array
+      if getHiddenVerts[1] != undefined do
+      (
+        polyop.unHideAllVerts i
+        format "Object With Hidden Verts : %\n" i.name
+      )
     )catch()
   )
+  redrawViews()
 )
 function forceResetXForm =
 (
