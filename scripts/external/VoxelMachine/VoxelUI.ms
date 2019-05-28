@@ -23,7 +23,22 @@ rollout VoxelMachine "Untitled" width:160 height:48
 		else normalize (cross theNormal theUp)
 		theY = normalize (cross theNormal theX)
 		return (matrix3 theX theY theNormal theFaceCenter)
-	)	
+	)
+	fn GetAmaxDimension obj faceNormal =
+	(
+		getDimension = (obj.max - obj.min)/2
+		dimensionArray = #()
+		dimensionArray[1] = abs faceNormal.x
+		dimensionArray[2] = abs faceNormal.y
+		dimensionArray[3] = abs faceNormal.z
+		case (findItem dimensionArray (amax dimensionArray)) of
+		(
+			1 : return (faceNormal * getDimension.x)
+			2 : return (faceNormal * getDimension.y)
+			3 : return (faceNormal * getDimension.z)
+		)
+		return undefined
+	)
 	fn GetTransformMatrix = 
 	(
 		local transformMatrix = matrix3 1
@@ -61,6 +76,9 @@ rollout VoxelMachine "Untitled" width:160 height:48
 					pPoint = PickPoint()
 					case of
 					(
+						(pPoint == undefined) :
+						(
+						)
 						(pPoint == #rightClick) :
 						(					
 							stopPlacement = true
@@ -69,28 +87,24 @@ rollout VoxelMachine "Untitled" width:160 height:48
 						)
 						((classOf pPoint) == Point3) :
 						(
-							if btnStartVoxelPlacement.state == true do
+							tMatrix = GetTransformMatrix()		
+							if voxelObjects.count == 0 do 
 							(
-								tMatrix = GetTransformMatrix()		
-								if voxelObjects.count == 0 do 
-								(
-									bx = Box width:10 height:10 length:10
-									bx.pivot = bx.center
-									bx.pos = [0,0,0]
-									AppendIfUnique voxelObjects bx.pos
-								)
-								if (findItem voxelObjects tMatrix.row4) == 0 do
-								(
-									bx = Box width:10 height:10 length:10 pos:tMatrix.row4
-									bx.transform = tMatrix
-									AppendIfUnique voxelObjects bx.pos
-								)
+								bx = box width:10 length:10 height:10 pivot:[0,0,5] pos:[0,0,0]
+								AppendIfUnique voxelObjects bx.pos
 							)
+							if (findItem voxelObjects tMatrix.row4) == 0 do
+							(
+								bx = Box width:10 height:10 length:10 pos:tMatrix.row4
+								bx.transform = tMatrix
+								AppendIfUnique voxelObjects bx.pos
+							)
+							
 						)
 					)
 				)
 			)
-			catch(format "Exception : %\n" getCurrentException())
+			catch(format "Exception : %\n" (getCurrentException()))
 		)
 		else
 		(
@@ -102,13 +116,11 @@ rollout VoxelMachine "Untitled" width:160 height:48
 		voxelObjects = for obj in objects where superClassOf obj == GeometryClass collect obj.pos	
 		if (findItem voxelObjects [0,0,0]) == 0 do
 		(
-			bx = Box width:10 height:10 length:10
-			bx.pivot = bx.center
-			bx.pos = [0,0,0]
+			box width:10 length:10 height:10 pivot:[0,0,5] pos:[0,0,0]
 		)				
 	)
 	on VoxelMachine close do
-	(		
+	(
 		voxelObjects = #()
 		btnStartVoxelPlacement.state = false
 	)
