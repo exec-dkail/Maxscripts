@@ -11,9 +11,11 @@ rollout VoxelMachineUI "Voxel Machine" width:288 height:392
 	dotNetControl 'grpSwatchButtons' "System.Windows.Forms.GroupBox" pos:[16,120] width:256 height:256 align:#left
 	button 'btnGenerateSwatch' "Add / Generate Swatch" pos:[8,72] width:272 height:32 align:#left	
 	
+	local imageSize = Point2
 	local swatchButtonHeight = 32
 	local colorPalette = #()
 	local maxButtonSize = 16
+
 	fn FormatLog msg =
 	(	
 		dateTime = dotNetClass "System.DateTime"
@@ -76,6 +78,7 @@ rollout VoxelMachineUI "Voxel Machine" width:288 height:392
 			if doesFileExist bmpFile do
 			(
 				bitmp = (dotNetClass "System.Drawing.Bitmap").FromFile bmpFile
+				imageSize = [bitmp.Width,bitmp.Height]
 			)
 			if bitmp.Width < maxButtonSize and bitmp.Height < maxButtonSize then
 			(
@@ -123,9 +126,9 @@ rollout VoxelMachineUI "Voxel Machine" width:288 height:392
 		else
 		(
 			i = 0
-			for x = 0 to (sqrt(colorPalette.Count)-1) do
+			for x = 0 to ((imageSize.x as integer) -1) do
 			(
-				for y = 0 to (sqrt(colorPalette.Count)-1) do
+				for y = 0 to ((imageSize.y as integer) -1) do
 				(
 					grpSwatchButtons.Controls.Item[i].Left = (x * grpSwatchButtons.Controls.Item[i].Width)
 					grpSwatchButtons.Controls.Item[i].Top = (y * grpSwatchButtons.Controls.Item[i].Height)
