@@ -85,28 +85,37 @@ rollout VoxelMachineUI "Voxel Machine" width:288 height:432
 	)
 	fn CreateBox color =
 	(
-		voxelObjects = #()
 		obj = GetObjectFromPoint()
 		if obj == undefined then
 		(
 			if (findItem voxelObjects [0,0,0]) == 0 do
 			(			
 				bx = Box width:10 height:10 length:10 pivot:[0,0,5] pos:[0,0,0] wirecolor:color
-				AppendIfUnique voxelObjects bx.pos
+				Append voxelObjects bx.center
 			)
 		)
 		else
 		(
-			tMatrix = GetTransformMatrix()
+			tMatrix = GetTransformMatrix()			
 			if tMatrix != undefined do
 			(
+				format "%\n" voxelObjects
 				for i = 1 to spnBlock.value do 
-				(
-					bx = Box width:10 height:10 length:10 wirecolor:color
-					bx.transform = tMatrix					
-					AppendIfUnique voxelObjects bx.pos
+				(	
+					bx = Box length:10 width:10 height:10 wirecolor:color
+					bx.transform = tMatrix
+					bx.pos = tMatrix.row4
+					bx.pos += (tMatrix.row3 * (i-1) * 10)				
+					if (findItem voxelObjects bx.center) == 0 then
+					(	
+						Append voxelObjects bx.center
+					)
+					else
+					(
+						delete bx
+					)
 				)
-			)
+			)				
 		)
 	)
 	fn FormatLog msg =
@@ -274,6 +283,7 @@ rollout VoxelMachineUI "Voxel Machine" width:288 height:432
 	(
 		if state then
 		(
+			voxelObjects = for obj in objects where obj.length == 10 and obj.width == 10 and obj.height == 10 collect obj.center
 			grpSwatchButtons.Enabled = true
 			stopPlacement = false
 			--voxelObjects = for obj in objects where superClassOf obj == GeometryClass collect obj.pos
@@ -292,17 +302,10 @@ rollout VoxelMachineUI "Voxel Machine" width:288 height:432
 					)
 					((classOf pPoint) == Point3) :
 					(
-						--curobj = ((_From grpSwatchButtons.Controls)._Where("c => c.Checked"))[1]	
 						if curobj != undefined do
 						(
-							CreateBox (color curobj.BackColor.r curobj.BackColor.g curobj.BackColor.b)
-							--format "Selected Color = % % %\n" curobj.BackColor.r curobj.BackColor.g curobj.BackColor.b
-						)
-						/*
-						tMatrix = GetTransformMatrix()		
-						if tMatrix != undefined then CreateBox 10 color numBlocks.Value matrix:tMatrix
-						else CreateBox 10 color 0
-						*/
+							CreateBox (color curobj.BackColor.r curobj.BackColor.g curobj.BackColor.b)							
+						)						
 					)
 				)
 			)
